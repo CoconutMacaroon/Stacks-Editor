@@ -43,6 +43,7 @@ import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-
 import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { createMenuEntries } from "../shared/menu/index";
 import { createMenuPlugin } from "../shared/menu/plugin";
+import { MathView } from "../../plugins/sample/math";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -112,6 +113,7 @@ export class RichTextEditor extends BaseView {
             },
             {
                 editable: editableCheck,
+
                 state: EditorState.create({
                     doc: doc,
                     plugins: [
@@ -151,6 +153,9 @@ export class RichTextEditor extends BaseView {
                 nodeViews: {
                     code_block: (node) => {
                         return new CodeBlockView(node);
+                    },
+                    math(node: ProseMirrorNode, view: EditorView, getPos: () => number) {
+                        return new MathView(node, view, getPos)
                     },
                     image(
                         node: ProseMirrorNode,

@@ -19,6 +19,7 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
     kbd: { mark: "kbd" },
     sup: { mark: "sup" },
     sub: { mark: "sub" },
+    math: { mark: "$$" },
 
     html_inline: {
         node: "html_inline",

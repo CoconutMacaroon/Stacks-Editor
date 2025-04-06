@@ -184,6 +184,8 @@ export const richTextInputRules = (
         (match, node) => node.childCount + <number>node.attrs.order == +match[1]
     );
 
+    const mathRule = wrappingInputRule(/^\$\$.{1,}\$\$$/, schema.nodes.math);
+
     const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code);
 
     const boldRule = markInputRule(strongRegexAsterisks, schema.marks.strong);
@@ -219,6 +221,7 @@ export const richTextInputRules = (
 
     return inputRules({
         rules: [
+            mathRule,
             blockquoteInputRule,
             spoilerInputRule,
             headingInputRule,

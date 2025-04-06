@@ -59,6 +59,8 @@ import {
     MenuBlock,
 } from "./helpers";
 
+import { addMathEffectCommand, renderMath } from '../../../plugins/sample/math';
+
 /**
  * Creates a dropdown menu for table edit functionality
  */
@@ -269,274 +271,280 @@ export const createMenuEntries = (
     options: CommonViewOptions,
     editorType: EditorType
 ): CoreMenuBlock[] => [
-    {
-        name: "formatting1", // TODO better name?
-        priority: 0,
-        entries: [
-            addIf(headingDropdown(schema), editorType === EditorType.RichText),
-            addIf(
+        {
+            name: "formatting1", // TODO better name?
+            priority: 0,
+            entries: [
+                addIf(headingDropdown(schema), editorType === EditorType.RichText),
+                addIf(
+                    {
+                        key: "toggleHeading",
+                        richText: null,
+                        commonmark: headerCommand,
+                        display: makeMenuButton(
+                            "Header",
+                            _t("commands.heading.dropdown", {
+                                shortcut: getShortcut("Mod-H"),
+                            }),
+                            "heading-btn"
+                        ),
+                    },
+                    editorType === EditorType.Commonmark
+                ),
                 {
-                    key: "toggleHeading",
+                    key: "toggleBold",
+                    richText: {
+                        command: toggleMark(schema.marks.strong),
+                        active: markActive(schema.marks.strong),
+                    },
+                    commonmark: boldCommand,
+                    display: makeMenuButton(
+                        "Bold",
+                        _t("commands.bold", { shortcut: getShortcut("Mod-B") }),
+                        "bold-btn"
+                    ),
+                },
+                {
+                    key: "toggleEmphasis",
+                    richText: {
+                        command: toggleMark(schema.marks.em),
+                        active: markActive(schema.marks.em),
+                    },
+                    commonmark: emphasisCommand,
+                    display: makeMenuButton(
+                        "Italic",
+                        _t("commands.emphasis", { shortcut: getShortcut("Mod-I") }),
+                        "italic-btn"
+                    ),
+                },
+                addIf(
+                    {
+                        key: "toggleStrike",
+                        richText: {
+                            command: toggleMark(schema.marks.strike),
+                            active: markActive(schema.marks.strike),
+                        },
+                        commonmark: strikethroughCommand,
+                        display: makeMenuButton(
+                            "Strikethrough",
+                            _t("commands.strikethrough"),
+                            "strike-btn"
+                        ),
+                    },
+                    options.parserFeatures?.extraEmphasis
+                ),
+            ],
+        },
+        {
+            name: "code-formatting",
+            priority: 5,
+            entries: [
+                {
+                    key: "toggleCode",
+                    richText: {
+                        command: toggleInlineCode,
+                        active: markActive(schema.marks.code),
+                    },
+                    commonmark: inlineCodeCommand,
+                    display: makeMenuButton(
+                        "Code",
+                        {
+                            title: _t("commands.inline_code.title", {
+                                shortcut: getShortcut("Mod-K"),
+                            }),
+                            description: _t("commands.inline_code.description"),
+                        },
+                        "code-btn"
+                    ),
+                },
+                {
+                    key: "toggleCodeblock",
+                    richText: {
+                        command: toggleCodeBlock(),
+                        active: nodeTypeActive(schema.nodes.code_block),
+                    },
+                    commonmark: insertCodeblockCommand,
+                    display: makeMenuButton(
+                        "CodeblockAlt",
+                        {
+                            title: _t("commands.code_block.title", {
+                                shortcut: getShortcut("Mod-M"),
+                            }),
+                            description: _t("commands.code_block.description"),
+                        },
+                        "code-block-btn"
+                    ),
+                },
+            ],
+        },
+        {
+            name: "formatting2", // TODO better name?
+            priority: 10,
+            entries: [
+                {
+                    key: "toggleLink",
+                    richText: insertRichTextLinkCommand,
+                    commonmark: insertCommonmarkLinkCommand,
+                    display: makeMenuButton(
+                        "Link",
+                        _t("commands.link", { shortcut: getShortcut("Mod-L") }),
+                        "insert-link-btn"
+                    ),
+                },
+                {
+                    key: "toggleBlockquote",
+                    richText: {
+                        command: toggleWrapIn(schema.nodes.blockquote),
+                        active: nodeTypeActive(schema.nodes.blockquote),
+                    },
+                    commonmark: blockquoteCommand,
+                    display: makeMenuButton(
+                        "Quote",
+                        _t("commands.blockquote", {
+                            shortcut: getShortcut("Mod-Q"),
+                        }),
+                        "blockquote-btn"
+                    ),
+                },
+                addIf(
+                    {
+                        key: "insertImage",
+                        richText: insertRichTextImageCommand,
+                        commonmark: insertCommonmarkImageCommand,
+                        display: makeMenuButton(
+                            "Image",
+                            _t("commands.image", {
+                                shortcut: getShortcut("Mod-G"),
+                            }),
+                            "insert-image-btn"
+                        ),
+                    },
+                    !!options.imageUpload?.handler
+                ),
+                addIf(
+                    {
+                        key: "insertTable",
+                        richText: {
+                            command: insertRichTextTableCommand,
+                            visible: (state: EditorState) =>
+                                !inTable(state.schema, state.selection),
+                        },
+                        commonmark: insertCommonmarkTableCommand,
+                        display: makeMenuButton(
+                            "Table",
+                            _t("commands.table_insert", {
+                                shortcut: getShortcut("Mod-E"),
+                            }),
+                            "insert-table-btn"
+                        ),
+                    },
+                    options.parserFeatures?.tables
+                ),
+                addIf(
+                    editorType === EditorType.RichText && tableDropdown(),
+                    options.parserFeatures?.tables
+                ),
+            ],
+        },
+        {
+            name: "formatting3", // TODO better name?
+            priority: 20,
+            entries: [
+                {
+                    key: "toggleOrderedList",
+                    richText: {
+                        command: toggleList(
+                            schema.nodes.ordered_list,
+                            schema.nodes.list_item
+                        ),
+                        active: nodeTypeActive(schema.nodes.ordered_list),
+                    },
+                    commonmark: orderedListCommand,
+                    display: makeMenuButton(
+                        "OrderedList",
+                        _t("commands.ordered_list", {
+                            shortcut: getShortcut("Mod-O"),
+                        }),
+                        "numbered-list-btn"
+                    ),
+                },
+                {
+                    key: "toggleUnorderedList",
+                    richText: {
+                        command: toggleList(
+                            schema.nodes.bullet_list,
+                            schema.nodes.list_item
+                        ),
+                        active: nodeTypeActive(schema.nodes.bullet_list),
+                    },
+                    commonmark: unorderedListCommand,
+                    display: makeMenuButton(
+                        "UnorderedList",
+                        _t("commands.unordered_list", {
+                            shortcut: getShortcut("Mod-U"),
+                        }),
+                        "bullet-list-btn"
+                    ),
+                },
+                {
+                    key: "insertRule",
+                    richText: insertRichTextHorizontalRuleCommand,
+                    commonmark: insertCommonmarkHorizontalRuleCommand,
+                    display: makeMenuButton(
+                        "HorizontalRule",
+                        _t("commands.horizontal_rule", {
+                            shortcut: getShortcut("Mod-R"),
+                        }),
+                        "horizontal-rule-btn"
+                    ),
+                },
+                moreFormattingDropdown(schema, options),
+            ],
+        },
+        {
+            name: "history",
+            priority: 30,
+            entries: [
+                {
+                    key: "undo-btn",
+                    richText: undo,
+                    commonmark: undo,
+                    display: makeMenuButton(
+                        "Undo",
+                        _t("commands.undo", { shortcut: getShortcut("Mod-Z") }),
+                        "undo-btn"
+                    ),
+                },
+                {
+                    key: "redo-btn",
+                    richText: redo,
+                    commonmark: redo,
+                    display: makeMenuButton(
+                        "Refresh",
+                        _t("commands.redo", { shortcut: getShortcut("Mod-Y") }),
+                        "redo-btn"
+                    ),
+                },
+            ],
+            classes: ["d-none sm:d-inline-flex vk:d-inline-flex"],
+        },
+        {
+            name: "other",
+            priority: 40,
+            entries: [
+                //TODO eventually this will mimic the "help" dropdown in the prod editor
+                makeMenuLinkEntry(
+                    "Help",
+                    _t("commands.help"),
+                    options.editorHelpLink,
+                    "help-link"
+                ),
+                {
+                    key: "math-btn",
                     richText: null,
-                    commonmark: headerCommand,
-                    display: makeMenuButton(
-                        "Header",
-                        _t("commands.heading.dropdown", {
-                            shortcut: getShortcut("Mod-H"),
-                        }),
-                        "heading-btn"
-                    ),
+                    commonmark: addMathEffectCommand,
+                    display: makeMenuButton("Tada", "Math!", "cocomacIdentifier")
                 },
-                editorType === EditorType.Commonmark
-            ),
-            {
-                key: "toggleBold",
-                richText: {
-                    command: toggleMark(schema.marks.strong),
-                    active: markActive(schema.marks.strong),
-                },
-                commonmark: boldCommand,
-                display: makeMenuButton(
-                    "Bold",
-                    _t("commands.bold", { shortcut: getShortcut("Mod-B") }),
-                    "bold-btn"
-                ),
-            },
-            {
-                key: "toggleEmphasis",
-                richText: {
-                    command: toggleMark(schema.marks.em),
-                    active: markActive(schema.marks.em),
-                },
-                commonmark: emphasisCommand,
-                display: makeMenuButton(
-                    "Italic",
-                    _t("commands.emphasis", { shortcut: getShortcut("Mod-I") }),
-                    "italic-btn"
-                ),
-            },
-            addIf(
-                {
-                    key: "toggleStrike",
-                    richText: {
-                        command: toggleMark(schema.marks.strike),
-                        active: markActive(schema.marks.strike),
-                    },
-                    commonmark: strikethroughCommand,
-                    display: makeMenuButton(
-                        "Strikethrough",
-                        _t("commands.strikethrough"),
-                        "strike-btn"
-                    ),
-                },
-                options.parserFeatures?.extraEmphasis
-            ),
-        ],
-    },
-    {
-        name: "code-formatting",
-        priority: 5,
-        entries: [
-            {
-                key: "toggleCode",
-                richText: {
-                    command: toggleInlineCode,
-                    active: markActive(schema.marks.code),
-                },
-                commonmark: inlineCodeCommand,
-                display: makeMenuButton(
-                    "Code",
-                    {
-                        title: _t("commands.inline_code.title", {
-                            shortcut: getShortcut("Mod-K"),
-                        }),
-                        description: _t("commands.inline_code.description"),
-                    },
-                    "code-btn"
-                ),
-            },
-            {
-                key: "toggleCodeblock",
-                richText: {
-                    command: toggleCodeBlock(),
-                    active: nodeTypeActive(schema.nodes.code_block),
-                },
-                commonmark: insertCodeblockCommand,
-                display: makeMenuButton(
-                    "CodeblockAlt",
-                    {
-                        title: _t("commands.code_block.title", {
-                            shortcut: getShortcut("Mod-M"),
-                        }),
-                        description: _t("commands.code_block.description"),
-                    },
-                    "code-block-btn"
-                ),
-            },
-        ],
-    },
-    {
-        name: "formatting2", // TODO better name?
-        priority: 10,
-        entries: [
-            {
-                key: "toggleLink",
-                richText: insertRichTextLinkCommand,
-                commonmark: insertCommonmarkLinkCommand,
-                display: makeMenuButton(
-                    "Link",
-                    _t("commands.link", { shortcut: getShortcut("Mod-L") }),
-                    "insert-link-btn"
-                ),
-            },
-            {
-                key: "toggleBlockquote",
-                richText: {
-                    command: toggleWrapIn(schema.nodes.blockquote),
-                    active: nodeTypeActive(schema.nodes.blockquote),
-                },
-                commonmark: blockquoteCommand,
-                display: makeMenuButton(
-                    "Quote",
-                    _t("commands.blockquote", {
-                        shortcut: getShortcut("Mod-Q"),
-                    }),
-                    "blockquote-btn"
-                ),
-            },
-            addIf(
-                {
-                    key: "insertImage",
-                    richText: insertRichTextImageCommand,
-                    commonmark: insertCommonmarkImageCommand,
-                    display: makeMenuButton(
-                        "Image",
-                        _t("commands.image", {
-                            shortcut: getShortcut("Mod-G"),
-                        }),
-                        "insert-image-btn"
-                    ),
-                },
-                !!options.imageUpload?.handler
-            ),
-            addIf(
-                {
-                    key: "insertTable",
-                    richText: {
-                        command: insertRichTextTableCommand,
-                        visible: (state: EditorState) =>
-                            !inTable(state.schema, state.selection),
-                    },
-                    commonmark: insertCommonmarkTableCommand,
-                    display: makeMenuButton(
-                        "Table",
-                        _t("commands.table_insert", {
-                            shortcut: getShortcut("Mod-E"),
-                        }),
-                        "insert-table-btn"
-                    ),
-                },
-                options.parserFeatures?.tables
-            ),
-            addIf(
-                editorType === EditorType.RichText && tableDropdown(),
-                options.parserFeatures?.tables
-            ),
-        ],
-    },
-    {
-        name: "formatting3", // TODO better name?
-        priority: 20,
-        entries: [
-            {
-                key: "toggleOrderedList",
-                richText: {
-                    command: toggleList(
-                        schema.nodes.ordered_list,
-                        schema.nodes.list_item
-                    ),
-                    active: nodeTypeActive(schema.nodes.ordered_list),
-                },
-                commonmark: orderedListCommand,
-                display: makeMenuButton(
-                    "OrderedList",
-                    _t("commands.ordered_list", {
-                        shortcut: getShortcut("Mod-O"),
-                    }),
-                    "numbered-list-btn"
-                ),
-            },
-            {
-                key: "toggleUnorderedList",
-                richText: {
-                    command: toggleList(
-                        schema.nodes.bullet_list,
-                        schema.nodes.list_item
-                    ),
-                    active: nodeTypeActive(schema.nodes.bullet_list),
-                },
-                commonmark: unorderedListCommand,
-                display: makeMenuButton(
-                    "UnorderedList",
-                    _t("commands.unordered_list", {
-                        shortcut: getShortcut("Mod-U"),
-                    }),
-                    "bullet-list-btn"
-                ),
-            },
-            {
-                key: "insertRule",
-                richText: insertRichTextHorizontalRuleCommand,
-                commonmark: insertCommonmarkHorizontalRuleCommand,
-                display: makeMenuButton(
-                    "HorizontalRule",
-                    _t("commands.horizontal_rule", {
-                        shortcut: getShortcut("Mod-R"),
-                    }),
-                    "horizontal-rule-btn"
-                ),
-            },
-            moreFormattingDropdown(schema, options),
-        ],
-    },
-    {
-        name: "history",
-        priority: 30,
-        entries: [
-            {
-                key: "undo-btn",
-                richText: undo,
-                commonmark: undo,
-                display: makeMenuButton(
-                    "Undo",
-                    _t("commands.undo", { shortcut: getShortcut("Mod-Z") }),
-                    "undo-btn"
-                ),
-            },
-            {
-                key: "redo-btn",
-                richText: redo,
-                commonmark: redo,
-                display: makeMenuButton(
-                    "Refresh",
-                    _t("commands.redo", { shortcut: getShortcut("Mod-Y") }),
-                    "redo-btn"
-                ),
-            },
-        ],
-        classes: ["d-none sm:d-inline-flex vk:d-inline-flex"],
-    },
-    {
-        name: "other",
-        priority: 40,
-        entries: [
-            //TODO eventually this will mimic the "help" dropdown in the prod editor
-            makeMenuLinkEntry(
-                "Help",
-                _t("commands.help"),
-                options.editorHelpLink,
-                "help-link"
-            ),
-        ],
-    },
-];
+            ],
+        },
+    ];

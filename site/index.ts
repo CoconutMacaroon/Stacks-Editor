@@ -16,6 +16,7 @@ import {
     codeDetectionPlugin,
     sillyPlugin,
     japaneseSEPlugin,
+    mathPlugin
 } from "../plugins/sample";
 import { stackSnippetPlugin } from "../plugins/official";
 import "./site.css";
@@ -284,7 +285,8 @@ domReady(() => {
             ...plugins,
             codeDetectionPlugin,
             japaneseSEPlugin,
-            sillyPlugin,
+            //sillyPlugin,
+            mathPlugin
         ];
     }
     if (enableDevxPlugin) {

@@ -11,9 +11,13 @@ export class TagLink implements NodeView {
         this.dom = document.createElement("a");
         this.dom.setAttribute("href", "#");
         this.dom.setAttribute("rel", "tag");
-        this.dom.classList.add("s-tag");
-        this.dom.innerText = node.attrs.tagName as string;
-
+        this.dom.innerText = `inlineMathStart${node.attrs.tagName as string}inlineMathEnd`
+        this.dom.style.color = "black";
+        // this.dom.classList.add("s-tag");
+        document.getElementById("mathUpdateBtn").click();
+        // this.dom.innerText = node.attrs.tagName as string;
+        // @ts-ignore
+        // MathJax.typeset();
         if (options?.render) {
             const rendered = options.render(
                 node.attrs.tagName as string,
