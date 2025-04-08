@@ -275,8 +275,8 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
 
         const title = node.attrs.title
             ? // @ts-expect-error TODO types might be wrong here
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-plus-operands
-              " " + state.quote(node.attrs.title)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-plus-operands
+            " " + state.quote(node.attrs.title)
             : "";
 
         const open = "![" + state.esc((node.attrs.alt as string) || "") + "]";
@@ -469,9 +469,9 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
 
     tagLink(state, node) {
         const isMeta = node.attrs.tagType === "meta-tag";
-        const prefix = isMeta ? "meta-tag" : "tag";
+        const prefix = '$'; // isMeta ? "meta-tag" : "tag";
         const tag = node.attrs.tagName as string;
-        state.write(`[${prefix}:${tag}]`);
+        state.write(`${prefix}${tag}$`);
     },
 
     spoiler(state, node) {

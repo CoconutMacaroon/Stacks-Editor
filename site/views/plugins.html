@@ -1,28 +1,26 @@
 {% layout "layout.html" %} {% block content %}
 
 <textarea id="content" class="d-none">
-There is a **code detection plugin** active in this editor that will intercept image uploads and simulate image code detection.<br />
-If code is detected, the plugin will ask the user if they want to upload images as a code block instead of an image.
-Try it out by clicking the image menu item above 🏞️.
+## MathJax in the Stacks editor
 
-<hr />
+We know that $1+1=2$.
 
-And here's a plugin that (sorta) adds [Japanese.SE furigana support](https://japanese.meta.stackexchange.com/questions/806/how-should-i-format-my-questions-on-japanese-language-se/807#807):
+If $f(x)=x^2$, then $f^\prime(x)=\frac{d}{dx}\left[f\left(x\right)\right]=2x$.
 
-`感``{かん}じる` renders as 感{かん}じる. すごい!
+While editing math in rich text mode isn't supported, you can do so in Markdown mode.
 
-There's also a very silly plugin set in the 🤘 menu. Try it out!
+Colors somewhat work, for example $\color{green}{12+12=24}$.
 
-Test of math:
+You can also have math in quotes, like this:
 
-[tag:y=mx+b]
+> `\implies` ($\implies$) is a [marginally preferable](https://tex.stackexchange.com/questions/47063/rightarrow-vs-implies-and-does-not-imply-symbol) alternative to `\Rightarrow` ($\Rightarrow$) for implication.
+>
+> <sub>Quote from [this post](https://math.meta.stackexchange.com/a/9954/) by leonbloy on Math Meta SE.</sub>
 
-[tag:a^2+b^2=c^2]
-
-End test
+Given $a^2+b^2=c^2$, one could say $c=\sqrt{a^2+b^2}$.
 </textarea>
 
 <h1>Plugin Playground</h1>
-<button onclick="console.error(window.MathJax);" id="mathUpdateBtn">Update</button>
+<button style="display: none;" onclick="console.error(window.MathJax);" id="mathUpdateBtn">Update</button>
 <div id="example-1" class="js-plugins-enabled js-dev-plugins-enabled"></div>
 {% endblock %}

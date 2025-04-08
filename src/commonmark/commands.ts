@@ -451,7 +451,7 @@ function blockWrapIn(
             : "";
     const followingNewlineNeeded =
         to + 1 < state.doc.content.size &&
-        state.doc.textBetween(to, to + 1) !== surroundingChar
+            state.doc.textBetween(to, to + 1) !== surroundingChar
             ? surroundingChar
             : "";
 
@@ -626,7 +626,7 @@ export function insertTagLinkCommand(
     isMetaTag: boolean
 ): MenuCommand {
     return (state, dispatch) => {
-        const leading = isMetaTag ? "[meta-tag:" : "[tag:";
+        const leading = "$";
 
         if (isMetaTag && options.disableMetaTags) {
             return false;
@@ -635,7 +635,7 @@ export function insertTagLinkCommand(
         if (state.selection.empty) {
             const dummyText = "tag-name";
             return insertRawText(
-                `${leading}${dummyText}]`,
+                `${leading}${dummyText}$`,
                 leading.length,
                 leading.length + dummyText.length,
                 state,
@@ -650,7 +650,7 @@ export function insertTagLinkCommand(
             return false;
         }
 
-        const insertedText = `${leading}${selectedText}]`;
+        const insertedText = `${leading}${selectedText}$`;
         const selectFrom = leading.length;
         const selectTo = selectFrom + selectedText.length;
 

@@ -7,54 +7,52 @@ function parse_tag_link(
     options: TagLinkOptions
 ) {
     // quick fail on first character
-    if (state.src.charCodeAt(state.pos) !== 0x5b /* [ */) {
+    if (state.src.charCodeAt(state.pos) !== 0x24 /* $ */) {
         return false;
     }
 
     if (
-        state.src.slice(state.pos, state.pos + 5) !== "[tag:" &&
-        state.src.slice(state.pos, state.pos + 10) !== "[meta-tag:"
+        state.src.slice(state.pos, state.pos + 1) !== "$"
     ) {
         return false;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const labelEnd = state.md.helpers.parseLinkLabel(
-        state,
-        state.pos + 1,
-        false
-    );
-
-    // could not find the label end
-    if (labelEnd < 0) {
+    let labelEndv2 = -1;
+    for (let i = state.pos + 1; i < state.src.length; ++i) {
+        if (state.src.charAt(i) == '$') {
+            labelEndv2 = i + 0;
+            break;
+        }
+    }
+    if (labelEndv2 === -1) {
         return false;
     }
+    // const totalContent = "abc";
+    const totalContent = state.src.slice(state.pos, labelEndv2);
+    // const isMeta = totalContent.slice(0, 10) === "[meta-tag:";
+    // const tagName = totalContent.slice(isMeta ? 10 : 5, -1);
 
-    const totalContent = state.src.slice(state.pos, labelEnd + 1);
-    const isMeta = totalContent.slice(0, 10) === "[meta-tag:";
-    const tagName = totalContent.slice(isMeta ? 10 : 5, -1);
-
-    if (isMeta && options.disableMetaTags) {
+    /*if (isMeta && options.disableMetaTags) {
         return false;
     }
 
     if (options.validate && !options.validate(tagName, isMeta, totalContent)) {
         return false;
     }
+    */
+    //if (!silent) {
+    let token = state.push("tag_link_open", "a", 1);
+    token.attrSet("tagName", totalContent.slice(1, totalContent.length));
+    token.attrSet("tagType", "tag");
+    // token.content = "xyz";
 
-    if (!silent) {
-        let token = state.push("tag_link_open", "a", 1);
-        token.attrSet("tagName", tagName);
-        token.attrSet("tagType", isMeta ? "meta-tag" : "tag");
-        token.content = totalContent;
+    token = state.push("text", "", 0);
+    token.content = `f${totalContent.slice(1, totalContent.length)}f`;// .slice(1, -1);
 
-        token = state.push("text", "", 0);
-        token.content = tagName;
+    token = state.push("tag_link_close", "a", -1);
+    //}
 
-        token = state.push("tag_link_close", "a", -1);
-    }
-
-    state.pos = labelEnd + 1;
+    state.pos = labelEndv2 + 1;
 
     return true;
 }

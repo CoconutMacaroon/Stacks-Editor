@@ -284,7 +284,7 @@ domReady(() => {
         plugins = [
             ...plugins,
             codeDetectionPlugin,
-            japaneseSEPlugin,
+            //japaneseSEPlugin,
             //sillyPlugin,
             mathPlugin
         ];
